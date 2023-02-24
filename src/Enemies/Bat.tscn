@@ -1,0 +1,155 @@
+[gd_scene load_steps=25 format=2]
+
+[ext_resource path="res://Enemies/Bat.png" type="Texture" id=1]
+[ext_resource path="res://Shadows/SmallShadow.png" type="Texture" id=2]
+[ext_resource path="res://HitBoxHurtBox/HurtBox.tscn" type="PackedScene" id=3]
+[ext_resource path="res://Enemies/Bat.gd" type="Script" id=4]
+[ext_resource path="res://Stats.tscn" type="PackedScene" id=5]
+[ext_resource path="res://Enemies/PlayerDetectionZone.tscn" type="PackedScene" id=6]
+[ext_resource path="res://HitBoxHurtBox/HitBox.tscn" type="PackedScene" id=7]
+[ext_resource path="res://HitBoxHurtBox/SoftCollision.tscn" type="PackedScene" id=8]
+[ext_resource path="res://Enemies/WanderController.tscn" type="PackedScene" id=9]
+[ext_resource path="res://WhiteColor.gdshader" type="Shader" id=10]
+
+[sub_resource type="CircleShape2D" id=13]
+radius = 8.0
+
+[sub_resource type="ShaderMaterial" id=14]
+resource_local_to_scene = true
+shader = ExtResource( 10 )
+shader_param/active = false
+
+[sub_resource type="AtlasTexture" id=1]
+atlas = ExtResource( 1 )
+region = Rect2( 0, 0, 16, 24 )
+
+[sub_resource type="AtlasTexture" id=2]
+atlas = ExtResource( 1 )
+region = Rect2( 16, 0, 16, 24 )
+
+[sub_resource type="AtlasTexture" id=3]
+atlas = ExtResource( 1 )
+region = Rect2( 32, 0, 16, 24 )
+
+[sub_resource type="AtlasTexture" id=4]
+atlas = ExtResource( 1 )
+region = Rect2( 48, 0, 16, 24 )
+
+[sub_resource type="AtlasTexture" id=5]
+atlas = ExtResource( 1 )
+region = Rect2( 64, 0, 16, 24 )
+
+[sub_resource type="SpriteFrames" id=6]
+animations = [ {
+"frames": [ SubResource( 1 ), SubResource( 2 ), SubResource( 3 ), SubResource( 4 ), SubResource( 5 ) ],
+"loop": true,
+"name": "default",
+"speed": 7.0
+} ]
+
+[sub_resource type="CircleShape2D" id=7]
+radius = 4.0
+
+[sub_resource type="CircleShape2D" id=12]
+
+[sub_resource type="CircleShape2D" id=11]
+radius = 62.1289
+
+[sub_resource type="CircleShape2D" id=10]
+radius = 7.0
+
+[sub_resource type="Animation" id=15]
+resource_name = "Blink"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/path = NodePath("Bat:material:shader_param/active")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+
+[sub_resource type="Animation" id=16]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("Bat:material:shader_param/active")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+
+[node name="Bat" type="KinematicBody2D" groups=["Enemies"]]
+collision_layer = 16
+collision_mask = 0
+script = ExtResource( 4 )
+
+[node name="SoftCollision" parent="." instance=ExtResource( 8 )]
+
+[node name="CollisionShape2D" parent="SoftCollision" index="0"]
+shape = SubResource( 13 )
+
+[node name="Bat" type="AnimatedSprite" parent="."]
+material = SubResource( 14 )
+frames = SubResource( 6 )
+frame = 2
+playing = true
+offset = Vector2( 0, -12 )
+
+[node name="Shadow" type="Sprite" parent="."]
+texture = ExtResource( 2 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+visible = false
+shape = SubResource( 7 )
+
+[node name="HurtBox" parent="." instance=ExtResource( 3 )]
+visible = false
+collision_layer = 8
+
+[node name="HurtBox" parent="HurtBox" index="0"]
+position = Vector2( 0, -14 )
+shape = SubResource( 12 )
+
+[node name="Stats" parent="." instance=ExtResource( 5 )]
+
+[node name="PlayerDetectionZone" parent="." instance=ExtResource( 6 )]
+visible = false
+
+[node name="DetectionBox" parent="PlayerDetectionZone" index="0"]
+shape = SubResource( 11 )
+
+[node name="HitBox" parent="." instance=ExtResource( 7 )]
+visible = false
+position = Vector2( 1, -7 )
+collision_mask = 4
+
+[node name="HitBoxBox" parent="HitBox" index="0"]
+position = Vector2( -1, -7 )
+shape = SubResource( 10 )
+
+[node name="WanderController" parent="." instance=ExtResource( 9 )]
+
+[node name="Blink" type="AnimationPlayer" parent="."]
+anims/Blink = SubResource( 15 )
+anims/RESET = SubResource( 16 )
+
+[connection signal="area_entered" from="HurtBox" to="." method="_on_HurtBox_area_entered"]
+[connection signal="invinciblity_ended" from="HurtBox" to="." method="_on_HurtBox_invinciblity_ended"]
+[connection signal="invinciblity_started" from="HurtBox" to="." method="_on_HurtBox_invinciblity_started"]
+[connection signal="no_health" from="Stats" to="." method="_on_Stats_no_health"]
+
+[editable path="SoftCollision"]
+[editable path="HurtBox"]
+[editable path="PlayerDetectionZone"]
+[editable path="HitBox"]
